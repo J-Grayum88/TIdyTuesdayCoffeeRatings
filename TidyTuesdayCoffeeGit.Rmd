@@ -1,0 +1,72 @@
+---
+title: "TidyTuesCoffee"
+author: "Jeff Grayum"
+date: "7/11/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+First, we load the libraries and dataset.
+
+```{r}
+library(tidytuesdayR)
+library(tidyverse)
+theme_set(theme_light())
+
+coffee_ratings <- tt_load("2020-07-07")$coffee_ratings
+```
+Let's take a look at the dataset:
+
+
+```{r echo=TRUE}
+view(coffee_ratings)
+```
+Let's do a little bit of counting:
+```{r echo=TRUE}
+coffee_lumped <- coffee_ratings %>%
+  filter(!is.na(variety), total_cup_points
+         > 10) %>%
+  mutate(variety = fct_lump(variety, 12), sort = TRUE) 
+  
+coffee_lumped %>%
+  mutate(variety = fct_reorder(variety, total_cup_points)) %>%
+  ggplot(aes(total_cup_points, variety)) + geom_boxplot()
+
+
+  
+  coffee_lumped %>%
+  ggplot(aes(total_cup_points, fill = variety)) + geom_histogram(binwidth = 2) + facet_wrap(~variety, scale = "free_y") + theme(legend.position = "none")
+
+```
+
+Now, select what you want to focus on:
+```{r echo=TRUE}
+coffee_ratings %>%
+  mutate(coffee_id = row_number()) %>%
+  select(coffee_id, total_cup_points, species,variety, owner, farm_name, country_of_origin, aroma:moisture)
+```
+
+```{r}
+coffee_ratings %>%
+  summarize(across(everything(), ~mean(!is.na(.)))) %>%
+  gather() %>%
+  view()
+
+coffee_ratings %>%
+  count(producer, sort = TRUE)
+
+
+coffee_ratings %>%
+  count(color, sort = TRUE)
+
+coffee_ratings %>%
+  count(processing_method, sort = TRUE)
+
+coffee_ratings %>%
+  count(country = fct_lump(country_of_origin, 12), sort = TRUE) %>%
+  filter(!is.na(country)) %>%
+  mutate(country = fct_reorder(country, n)) %>%
+  ggplot(aes(n, country)) + geom_col()
+  
+```
+
